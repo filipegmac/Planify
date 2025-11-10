@@ -209,13 +209,22 @@ Planify/
 └── README.md
 ```
 
-## ✅ Próximas Funcionalidades
+## ✅ Funcionalidades Implementadas
 
-- [ ] Sistema completo de agendamento
+- ✅ Sistema de autenticação diferenciado (admin, médico, paciente)
+- ✅ Cadastro de pacientes e médicos
+- ✅ Sistema completo de agendamento de consultas
+- ✅ Visualização de médicos por especialidade
+- ✅ Visualização de horários disponíveis
+- ✅ Cancelamento de consultas
+
+## 📋 Próximas Funcionalidades
+
 - [ ] Notificações por email
 - [ ] Dashboard para médicos e admin
-- [ ] Histórico de consultas
+- [ ] Histórico de consultas e prontuário
 - [ ] Relatórios e estatísticas
+- [ ] Sistema de pagamento
 
 ## 📄 Licença
 

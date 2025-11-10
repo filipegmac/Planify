@@ -7,6 +7,7 @@ const connectDB = require('./config/db');
 // Importar rotas
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
+const appointmentRoutes = require('./routes/appointmentRoutes');
 
 // Configurar dotenv com o caminho correto
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -26,6 +27,7 @@ app.get('/', (req, res) => {
 // Rotas da API
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/appointments', appointmentRoutes);
 
 const PORT = process.env.PORT || 5000;
 

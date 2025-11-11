@@ -6,6 +6,7 @@ const {
   createAppointment,
   getPatientAppointments,
   getDoctorAppointments,
+  getDoctorSchedule,
   cancelAppointment,
   getAppointmentById,
   getAllAppointments,
@@ -21,7 +22,8 @@ router.post('/', protect, isPatient, createAppointment); // Criar agendamento
 router.get('/my-appointments', protect, isPatient, getPatientAppointments); // Ver minhas consultas
 
 // Rotas de médico
-router.get('/my-schedule', protect, isDoctor, getDoctorAppointments); // Ver agenda do médico
+router.get('/my-schedule', protect, isDoctor, getDoctorAppointments); // Ver agenda do médico (simples)
+router.get('/schedule', protect, isDoctor, getDoctorSchedule); // Ver agenda com filtros e estatísticas
 
 // Rotas compartilhadas (paciente e médico)
 router.get('/:appointmentId', protect, getAppointmentById); // Ver consulta específica

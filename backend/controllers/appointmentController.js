@@ -238,6 +238,85 @@ const getDoctorAppointments = async (req, res) => {
   }
 };
 
+// Visualizar agenda médica com filtros e agrupamento
+const getDoctorSchedule = async (req, res) => {
+  try {
+    const doctorId = req.user.id;
+    const { filter, startDate, endDate, status } = req.query;
+
+    // Definir período de busca
+    let dateFilter = {};
+    const now = new Date();
+
+    if (filter === 'today') {
+      // Apenas hoje
+      const startOfDay = new Date(now.setHours(0, 0, 0, 0));
+      const endOfDay = new Date(now.setHours(23, 59, 59, 999));
+      dateFilter = { $gte: startOfDay, $lte: endOfDay };
+    } else if (filter === 'week') {
+      // Próximos 7 dias
+      const startOfWeek = new Date(now.setHours(0, 0, 0, 0));
+      const endOfWeek = new Date(now);
+      endOfWeek.setDate(endOfWeek.getDate() + 7);
+      dateFilter = { $gte: startOfWeek, $lte: endOfWeek };
+    } else if (filter === 'month') {
+      // Próximos 30 dias
+      const startOfMonth = new Date(now.setHours(0, 0, 0, 0));
+      const endOfMonth = new Date(now);
+      endOfMonth.setDate(endOfMonth.getDate() + 30);
+      dateFilter = { $gte: startOfMonth, $lte: endOfMonth };
+    } else if (startDate && endDate) {
+      // Período personalizado
+      dateFilter = { 
+        $gte: new Date(startDate), 
+        $lte: new Date(endDate) 
+      };
+    }
+
+    // Montar query
+    const query = { doctorId };
+    if (Object.keys(dateFilter).length > 0) {
+      query.appointmentDate = dateFilter;
+    }
+    if (status) {
+      query.status = status;
+    }
+
+    // Buscar consultas
+    const appointments = await Appointment.find(query)
+      .populate('patientId', 'name cpf phone email')
+      .sort({ appointmentDate: 1, appointmentTime: 1 });
+
+    // Agrupar por data
+    const groupedByDate = {};
+    appointments.forEach(apt => {
+      const dateKey = apt.appointmentDate.toISOString().split('T')[0];
+      if (!groupedByDate[dateKey]) {
+        groupedByDate[dateKey] = [];
+      }
+      groupedByDate[dateKey].push(apt);
+    });
+
+    // Calcular estatísticas
+    const stats = {
+      total: appointments.length,
+      confirmed: appointments.filter(apt => apt.status === 'confirmed').length,
+      cancelled: appointments.filter(apt => apt.status === 'cancelled').length,
+      completed: appointments.filter(apt => apt.status === 'completed').length,
+    };
+
+    res.json({
+      stats,
+      totalAppointments: appointments.length,
+      groupedByDate,
+      appointments,
+    });
+  } catch (error) {
+    console.error('Erro ao buscar agenda do médico:', error);
+    res.status(500).json({ message: 'Erro no servidor' });
+  }
+};
+
 // Cancelar consulta (paciente)
 const cancelAppointment = async (req, res) => {
   try {
@@ -335,6 +414,7 @@ module.exports = {
   createAppointment,
   getPatientAppointments,
   getDoctorAppointments,
+  getDoctorSchedule,
   cancelAppointment,
   getAppointmentById,
   getAllAppointments,

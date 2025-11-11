@@ -136,6 +136,68 @@ GET /api/users/:id
 Authorization: Bearer {token_admin}
 ```
 
+### Agenda Médica (Rotas protegidas - Apenas Médicos)
+
+#### Visualizar Agenda com Filtros
+```http
+GET /api/appointments/schedule?filter=today
+Authorization: Bearer {token_medico}
+```
+
+**Parâmetros de Query (opcionais):**
+- `filter` - Filtro de período: `today`, `week`, `month`
+- `startDate` - Data inicial (formato: YYYY-MM-DD) para período personalizado
+- `endDate` - Data final (formato: YYYY-MM-DD) para período personalizado
+- `status` - Filtrar por status: `confirmed`, `cancelled`, `completed`
+
+**Exemplos:**
+```http
+# Agenda de hoje
+GET /api/appointments/schedule?filter=today
+
+# Agenda da semana (próximos 7 dias)
+GET /api/appointments/schedule?filter=week
+
+# Agenda do mês (próximos 30 dias)
+GET /api/appointments/schedule?filter=month
+
+# Período personalizado
+GET /api/appointments/schedule?startDate=2024-01-01&endDate=2024-01-31
+
+# Apenas consultas confirmadas desta semana
+GET /api/appointments/schedule?filter=week&status=confirmed
+```
+
+**Resposta:**
+```json
+{
+  "stats": {
+    "total": 15,
+    "confirmed": 12,
+    "cancelled": 2,
+    "completed": 1
+  },
+  "totalAppointments": 15,
+  "groupedByDate": {
+    "2024-01-15": [
+      {
+        "_id": "appointment_id",
+        "appointmentDate": "2024-01-15T00:00:00.000Z",
+        "appointmentTime": "09:00",
+        "status": "confirmed",
+        "patientId": {
+          "name": "João Silva",
+          "cpf": "12345678900",
+          "phone": "(11) 98765-4321",
+          "email": "joao@email.com"
+        }
+      }
+    ]
+  },
+  "appointments": [...]
+}
+```
+
 ## 👥 Tipos de Usuário
 
 ### Admin
@@ -145,8 +207,9 @@ Authorization: Bearer {token_admin}
 - Gerenciar o sistema
 
 ### Médico
-- Visualizar agenda
-- Gerenciar consultas
+- ✅ Visualizar agenda com filtros (hoje, semana, mês, personalizado)
+- ✅ Gerenciar consultas
+- ✅ Visualizar estatísticas da agenda
 - Atualizar disponibilidade
 
 ### Paciente
@@ -217,6 +280,9 @@ Planify/
 - ✅ Visualização de médicos por especialidade
 - ✅ Visualização de horários disponíveis
 - ✅ Cancelamento de consultas
+- ✅ **Gestão de Agenda Médica** com filtros (hoje, semana, mês, personalizado)
+- ✅ **Agrupamento de consultas por data**
+- ✅ **Estatísticas da agenda** (confirmadas, canceladas, concluídas)
 
 ## 📋 Próximas Funcionalidades
 

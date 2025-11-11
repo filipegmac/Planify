@@ -24,6 +24,68 @@ const getDoctorsBySpecialty = async (req, res) => {
   }
 };
 
+// Obter agenda semanal do médico (quais dias e horários ele atende)
+const getDoctorWeeklySchedule = async (req, res) => {
+  try {
+    const { doctorId } = req.params;
+
+    // Buscar médico
+    const doctor = await User.findById(doctorId);
+    if (!doctor || doctor.role !== 'doctor') {
+      return res.status(404).json({ message: 'Médico não encontrado' });
+    }
+
+    // Verificar se tem agenda cadastrada
+    if (!doctor.schedule || doctor.schedule.size === 0) {
+      return res.json({
+        doctor: {
+          id: doctor._id,
+          name: doctor.name,
+          specialty: doctor.specialty,
+        },
+        message: 'Médico ainda não cadastrou horários de atendimento',
+        weeklySchedule: {},
+      });
+    }
+
+    // Montar agenda semanal com horários
+    const weeklySchedule = {};
+    const daysOfWeek = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+
+    daysOfWeek.forEach(day => {
+      const periods = doctor.schedule.get(day);
+      if (periods && periods.length > 0) {
+        // Gerar slots de horário para cada período
+        const allSlots = [];
+        periods.forEach(period => {
+          const slots = generateTimeSlots(period.startTime, period.endTime, 30);
+          allSlots.push(...slots);
+        });
+
+        weeklySchedule[day] = {
+          periods: periods,
+          availableSlots: allSlots,
+          totalSlots: allSlots.length,
+        };
+      }
+    });
+
+    res.json({
+      doctor: {
+        id: doctor._id,
+        name: doctor.name,
+        specialty: doctor.specialty,
+        phone: doctor.phone,
+      },
+      weeklySchedule,
+      consultationDuration: 30, // minutos
+    });
+  } catch (error) {
+    console.error('Erro ao buscar agenda semanal:', error);
+    res.status(500).json({ message: 'Erro no servidor' });
+  }
+};
+
 // Obter horários disponíveis de um médico em uma data específica
 const getDoctorAvailability = async (req, res) => {
   try {
@@ -410,6 +472,7 @@ const getAllAppointments = async (req, res) => {
 
 module.exports = {
   getDoctorsBySpecialty,
+  getDoctorWeeklySchedule,
   getDoctorAvailability,
   createAppointment,
   getPatientAppointments,

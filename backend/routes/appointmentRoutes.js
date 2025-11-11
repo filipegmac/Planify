@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
   getDoctorsBySpecialty,
+  getDoctorWeeklySchedule,
   getDoctorAvailability,
   createAppointment,
   getPatientAppointments,
@@ -15,7 +16,8 @@ const { protect, isAdmin, isDoctor, isPatient } = require('../middleware/authMid
 
 // Rotas públicas (qualquer usuário autenticado)
 router.get('/doctors', protect, getDoctorsBySpecialty); // Listar médicos por especialidade
-router.get('/doctors/:doctorId/availability', protect, getDoctorAvailability); // Ver disponibilidade
+router.get('/doctors/:doctorId/schedule', protect, getDoctorWeeklySchedule); // Ver agenda semanal do médico
+router.get('/doctors/:doctorId/availability', protect, getDoctorAvailability); // Ver disponibilidade em data específica
 
 // Rotas de paciente
 router.post('/', protect, isPatient, createAppointment); // Criar agendamento

@@ -154,10 +154,111 @@ const getUserById = async (req, res) => {
   }
 };
 
+// Editar usuário (apenas admin)
+const updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+
+    // Buscar usuário
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: 'Usuário não encontrado' });
+    }
+
+    // Validar alterações de email
+    if (updates.email && updates.email !== user.email) {
+      const emailExists = await User.findOne({ email: updates.email });
+      if (emailExists) {
+        return res.status(400).json({ message: 'Email já cadastrado' });
+      }
+    }
+
+    // Validar alterações de CPF (para pacientes)
+    if (updates.cpf && updates.cpf !== user.cpf) {
+      const cpfExists = await User.findOne({ cpf: updates.cpf });
+      if (cpfExists) {
+        return res.status(400).json({ message: 'CPF já cadastrado' });
+      }
+    }
+
+    // Validar alterações de CRM (para médicos)
+    if (updates.crm && updates.crm !== user.crm) {
+      const crmExists = await User.findOne({ crm: updates.crm });
+      if (crmExists) {
+        return res.status(400).json({ message: 'CRM já cadastrado' });
+      }
+    }
+
+    // Não permitir alterar role e senha por esta rota
+    delete updates.role;
+    delete updates.password;
+
+    // Atualizar usuário
+    Object.assign(user, updates);
+    await user.save();
+
+    res.json({
+      message: 'Usuário atualizado com sucesso',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        cpf: user.cpf,
+        crm: user.crm,
+        specialty: user.specialty,
+        phone: user.phone,
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao atualizar usuário:', error);
+    res.status(500).json({ message: 'Erro no servidor' });
+  }
+};
+
+// Excluir usuário (apenas admin)
+const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Buscar usuário
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: 'Usuário não encontrado' });
+    }
+
+    // Não permitir excluir o próprio admin logado
+    if (req.user.id === id) {
+      return res.status(400).json({ 
+        message: 'Você não pode excluir sua própria conta' 
+      });
+    }
+
+    // Excluir usuário
+    await User.findByIdAndDelete(id);
+
+    res.json({
+      message: 'Usuário excluído com sucesso',
+      deletedUser: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao excluir usuário:', error);
+    res.status(500).json({ message: 'Erro no servidor' });
+  }
+};
+
 module.exports = {
   createPatient,
   createDoctor,
   getAllUsers,
   getAllDoctors,
   getUserById,
+  updateUser,
+  deleteUser,
 };

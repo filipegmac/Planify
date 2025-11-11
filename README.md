@@ -136,6 +136,68 @@ GET /api/users/:id
 Authorization: Bearer {token_admin}
 ```
 
+#### Editar Usuário
+```http
+PUT /api/users/:id
+Authorization: Bearer {token_admin}
+Content-Type: application/json
+
+{
+  "name": "Nome Atualizado",
+  "email": "novo@email.com",
+  "phone": "(11) 99999-9999",
+  "specialty": "Nova Especialidade",
+  "address": {
+    "street": "Nova Rua",
+    "number": "456",
+    "city": "São Paulo",
+    "state": "SP"
+  }
+}
+```
+
+**Observações:**
+- Não é possível alterar `role` (tipo de usuário)
+- Não é possível alterar `password` por esta rota
+- Validações de unicidade (email, CPF, CRM) são aplicadas
+
+**Resposta:**
+```json
+{
+  "message": "Usuário atualizado com sucesso",
+  "user": {
+    "id": "user_id",
+    "name": "Nome Atualizado",
+    "email": "novo@email.com",
+    "role": "patient",
+    "phone": "(11) 99999-9999"
+  }
+}
+```
+
+#### Excluir Usuário
+```http
+DELETE /api/users/:id
+Authorization: Bearer {token_admin}
+```
+
+**Observações:**
+- O admin não pode excluir a própria conta
+- A exclusão é permanente
+
+**Resposta:**
+```json
+{
+  "message": "Usuário excluído com sucesso",
+  "deletedUser": {
+    "id": "user_id",
+    "name": "João Silva",
+    "email": "joao@email.com",
+    "role": "patient"
+  }
+}
+```
+
 ### Agenda Médica (Rotas protegidas - Apenas Médicos)
 
 #### Visualizar Agenda com Filtros
@@ -201,10 +263,11 @@ GET /api/appointments/schedule?filter=week&status=confirmed
 ## 👥 Tipos de Usuário
 
 ### Admin
-- Cadastrar pacientes
-- Cadastrar médicos
-- Visualizar todos os usuários
-- Gerenciar o sistema
+- ✅ Cadastrar pacientes e médicos
+- ✅ Editar usuários (pacientes e médicos)
+- ✅ Excluir usuários
+- ✅ Visualizar todos os usuários
+- ✅ Gerenciar o sistema completo
 
 ### Médico
 - ✅ Visualizar agenda com filtros (hoje, semana, mês, personalizado)
@@ -276,6 +339,8 @@ Planify/
 
 - ✅ Sistema de autenticação diferenciado (admin, médico, paciente)
 - ✅ Cadastro de pacientes e médicos
+- ✅ **Edição de usuários** (pacientes e médicos)
+- ✅ **Exclusão de usuários** com validações de segurança
 - ✅ Sistema completo de agendamento de consultas
 - ✅ Visualização de médicos por especialidade
 - ✅ Visualização de horários disponíveis
@@ -283,14 +348,6 @@ Planify/
 - ✅ **Gestão de Agenda Médica** com filtros (hoje, semana, mês, personalizado)
 - ✅ **Agrupamento de consultas por data**
 - ✅ **Estatísticas da agenda** (confirmadas, canceladas, concluídas)
-
-## 📋 Próximas Funcionalidades
-
-- [ ] Notificações por email
-- [ ] Dashboard para médicos e admin
-- [ ] Histórico de consultas e prontuário
-- [ ] Relatórios e estatísticas
-- [ ] Sistema de pagamento
 
 ## 📄 Licença
 

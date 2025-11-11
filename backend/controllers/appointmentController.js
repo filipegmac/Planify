@@ -50,7 +50,7 @@ const getDoctorWeeklySchedule = async (req, res) => {
 
     // Montar agenda semanal com horários
     const weeklySchedule = {};
-    const daysOfWeek = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+    const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
     daysOfWeek.forEach(day => {
       const periods = doctor.schedule.get(day);

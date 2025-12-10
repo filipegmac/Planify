@@ -54,6 +54,88 @@ const createPatient = async (req, res) => {
   }
 };
 
+// Atualizar agenda do médico logado
+const updateMySchedule = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { schedule } = req.body;
+
+    if (!schedule || typeof schedule !== 'object') {
+      return res.status(400).json({ message: 'Agenda inválida' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user || user.role !== 'doctor') {
+      return res.status(403).json({ message: 'Apenas médicos podem atualizar a própria agenda' });
+    }
+
+    // Garantir que schedule seja um Map do Mongoose
+    if (!user.schedule || typeof user.schedule.set !== 'function') {
+      user.schedule = new Map();
+    } else {
+      // Limpar agenda anterior para evitar lixo
+      user.schedule.clear();
+    }
+
+    // Preencher agenda com os dias e períodos enviados
+    Object.entries(schedule).forEach(([day, periods]) => {
+      if (Array.isArray(periods) && periods.length > 0) {
+        user.schedule.set(
+          day,
+          periods.map((p) => ({
+            startTime: p.startTime,
+            endTime: p.endTime,
+          }))
+        );
+      }
+    });
+
+    user.markModified('schedule');
+    await user.save();
+
+    // Converter para objeto simples na resposta
+    let savedSchedule = user.schedule;
+    if (savedSchedule && typeof savedSchedule.toObject === 'function') {
+      savedSchedule = savedSchedule.toObject();
+    } else if (savedSchedule instanceof Map) {
+      savedSchedule = Object.fromEntries(savedSchedule);
+    }
+
+    res.json({
+      message: 'Agenda atualizada com sucesso',
+      schedule: savedSchedule,
+    });
+  } catch (error) {
+    console.error('Erro ao atualizar agenda do médico:', error);
+    res.status(500).json({ message: 'Erro no servidor' });
+  }
+};
+
+// Obter agenda do médico logado
+const getMySchedule = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+
+    if (!user || user.role !== 'doctor') {
+      return res.status(403).json({ message: 'Apenas médicos podem ver a própria agenda' });
+    }
+
+    let schedule = user.schedule || {};
+
+    if (schedule && typeof schedule.toObject === 'function') {
+      schedule = schedule.toObject();
+    } else if (schedule instanceof Map) {
+      schedule = Object.fromEntries(schedule);
+    }
+
+    res.json({ schedule });
+  } catch (error) {
+    console.error('Erro ao obter agenda do médico:', error);
+    res.status(500).json({ message: 'Erro no servidor' });
+  }
+};
+
 // Cadastrar médico (apenas admin)
 const createDoctor = async (req, res) => {
   try {
@@ -261,4 +343,6 @@ module.exports = {
   getUserById,
   updateUser,
   deleteUser,
+  updateMySchedule,
+  getMySchedule,
 };

@@ -105,10 +105,15 @@ const getDoctorAvailability = async (req, res) => {
 
     // Converter data para objeto Date
     const selectedDate = new Date(date);
+    const dayIndex = selectedDate.getDay();
+    const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const scheduleKey = dayKeys[dayIndex];
     const dayOfWeek = selectedDate.toLocaleDateString('pt-BR', { weekday: 'long' });
 
     // Buscar horários da agenda do médico para esse dia
-    const schedule = doctor.schedule ? doctor.schedule.get(dayOfWeek) : null;
+    const schedule = doctor.schedule
+      ? (doctor.schedule.get(scheduleKey) || doctor.schedule.get(dayOfWeek))
+      : null;
 
     if (!schedule || schedule.length === 0) {
       return res.json({

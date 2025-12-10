@@ -1,0 +1,5 @@
+{
+  "name": "Planify Frontend",
+  "description": "A modern medical appointment scheduling system frontend built with React, TypeScript, and Tailwind CSS.",
+  "requestFramePermissions": []
+}
